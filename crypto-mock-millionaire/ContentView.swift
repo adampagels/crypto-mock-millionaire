@@ -1,88 +1,104 @@
-//
-//  ContentView.swift
-//  crypto-mock-millionaire
-//
-//  Created by Adam Pagels on 2023-08-16.
-//
-
 import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    @State private var coins: [Coin] = []
     var body: some View {
         NavigationView {
             List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                ForEach(coins) { coin in
+                    NavigationLink(destination: Text("Detail View for \(coin.name)")) {
+                        Text(coin.name)
                     }
                 }
             }
-            Text("Select an item")
+            .navigationTitle("Assets")
         }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
+        .task {
             do {
-                try viewContext.save()
+                coins = try await getCoins()
+            } catch CoinError.invalidResponse{
+                print("invalid response")
+            } catch CoinError.invalidData{
+                print("invalid data")
+            } catch CoinError.invalidURL{
+                print("invalid url")
             } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("unexpected error")
             }
         }
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
+
+
+func getCoins() async throws -> [Coin] {
+    let endpoint = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false"
+    
+    guard let url = URL(string: endpoint) else {
+        throw CoinError.invalidURL
+    }
+    
+    let (data, response) = try await URLSession.shared.data(from: url)
+    
+    guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+        throw CoinError.invalidResponse
+    }
+    
+    do {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode([Coin].self, from: data)
+    } catch {
+        throw CoinError.invalidData
+    }
+}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
+}
+
+struct Coin: Codable, Identifiable {
+    let id: String
+    let symbol: String
+    let name: String
+    let image: String
+    let currentPrice: Double
+    let marketCap: Double
+    let marketCapRank: Int
+    let fullyDilutedValuation: Double?
+    let totalVolume: Double
+    let high24H: Double
+    let low24H: Double
+    let priceChange24H: Double
+    let priceChangePercentage24H: Double
+    let marketCapChange24H: Double
+    let marketCapChangePercentage24H: Double
+    let circulatingSupply: Double?
+    let totalSupply: Double?
+    let maxSupply: Double?
+    let ath: Double
+    let athChangePercentage: Double
+    let athDate: String
+    let roi: Roi?
+    let atl: Double
+    let atlChangePercentage: Double
+    let atlDate: String
+    let lastUpdated: String
+    let priceChangePercentage24HInCurrency: Double?
+}
+
+struct Roi: Codable {
+    let times: Double
+    let currency: String
+    let percentage: Double
+}
+
+
+enum CoinError: Error {
+    case invalidURL
+    case invalidResponse
+    case invalidData
 }
