@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7E4846FF2A92526400C8CAF2 /* CryptocurrencyDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E4846FE2A92526400C8CAF2 /* CryptocurrencyDetails.swift */; };
 		7E8286642A8D0645001E7860 /* crypto_mock_millionaireApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8286632A8D0645001E7860 /* crypto_mock_millionaireApp.swift */; };
 		7E8286662A8D0645001E7860 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8286652A8D0645001E7860 /* ContentView.swift */; };
 		7E8286682A8D0646001E7860 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E8286672A8D0646001E7860 /* Assets.xcassets */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7E4846FE2A92526400C8CAF2 /* CryptocurrencyDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptocurrencyDetails.swift; sourceTree = "<group>"; };
 		7E8286602A8D0645001E7860 /* crypto-mock-millionaire.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "crypto-mock-millionaire.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E8286632A8D0645001E7860 /* crypto_mock_millionaireApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = crypto_mock_millionaireApp.swift; sourceTree = "<group>"; };
 		7E8286652A8D0645001E7860 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 			children = (
 				7E8286632A8D0645001E7860 /* crypto_mock_millionaireApp.swift */,
 				7E8286652A8D0645001E7860 /* ContentView.swift */,
+				7E4846FE2A92526400C8CAF2 /* CryptocurrencyDetails.swift */,
 				7E8286672A8D0646001E7860 /* Assets.xcassets */,
 				7E82866C2A8D0646001E7860 /* Persistence.swift */,
 				7E82866E2A8D0646001E7860 /* crypto_mock_millionaire.xcdatamodeld */,
@@ -147,6 +150,7 @@
 				7E8286662A8D0645001E7860 /* ContentView.swift in Sources */,
 				7E8286702A8D0646001E7860 /* crypto_mock_millionaire.xcdatamodeld in Sources */,
 				7E8286642A8D0645001E7860 /* crypto_mock_millionaireApp.swift in Sources */,
+				7E4846FF2A92526400C8CAF2 /* CryptocurrencyDetails.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

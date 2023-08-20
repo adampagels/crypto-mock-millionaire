@@ -7,7 +7,7 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(coins) { coin in
-                    NavigationLink(destination: Text("Detail View for \(coin.name)")) {
+                    NavigationLink(destination: CryptocurrencyDetails(cryptocurrency: coin.name)) {
                         Text(coin.name)
                     }
                 }
