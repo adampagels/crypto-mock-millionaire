@@ -1,7 +1,8 @@
 import SwiftUI
+import Charts
 
 struct CryptocurrencyDetails: View {
-    @State private var cryptocurrencyPriceHistory: PriceHistory = PriceHistory(prices: [])
+    @State private var cryptocurrencyPriceHistory: [ChartData] = []
     let cryptocurrency: String
     
     var body: some View {
@@ -11,6 +12,18 @@ struct CryptocurrencyDetails: View {
             } else {
                 Text("Bitcoin")
             }
+            Chart(cryptocurrencyPriceHistory) {
+                LineMark(
+                    x: .value("Price", $0.x),
+                    y: .value("Date", $0.y)
+                )
+                .lineStyle(.init(lineWidth: 2))
+                .interpolationMethod(.catmullRom)
+            }
+            .chartYAxis(.hidden)
+            .chartXAxis(.hidden)
+            .frame(height: 300)
+            Spacer()
         }
         .task {
             do {
@@ -29,7 +42,7 @@ struct CryptocurrencyDetails: View {
     }
 }
 
-func getCryptocurrencyPriceHistory() async throws -> PriceHistory {
+func getCryptocurrencyPriceHistory() async throws -> [ChartData] {
     // TODO: Use cryptocurrency variable rather than hardcoded name
     let endpoint = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365"
     
@@ -45,7 +58,22 @@ func getCryptocurrencyPriceHistory() async throws -> PriceHistory {
     
     do {
         let decoder = JSONDecoder()
-        return try decoder.decode(PriceHistory.self, from: data)
+        let priceHistoryResponse = try decoder.decode(PriceHistory.self, from: data)
+        
+        return priceHistoryResponse.prices.map { entry in
+            let timestamp = entry[0]
+            let price = entry[1]
+            let unixTimeInSeconds = Double(timestamp) / 1000.0
+            let date = Date(timeIntervalSince1970: unixTimeInSeconds)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .long
+            dateFormatter.timeStyle = .none
+            let formattedDate = dateFormatter.string(from: date)
+            print(ChartData(x: formattedDate, y: price))
+            
+            return ChartData(x: formattedDate, y: price)
+            
+        }
     } catch {
         throw PriceHistoryError.invalidData
     }
@@ -59,6 +87,12 @@ struct CryptocurrencyDetails_Previews: PreviewProvider {
 
 struct PriceHistory: Codable {
     let prices: [[Double]]
+}
+
+struct ChartData: Identifiable {
+    let id = UUID()
+    let x: String
+    let y: Double
 }
 
 enum PriceHistoryError: Error {
