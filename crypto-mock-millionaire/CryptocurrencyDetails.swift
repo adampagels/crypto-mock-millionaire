@@ -3,6 +3,7 @@ import Charts
 
 struct CryptocurrencyDetails: View {
     @State private var cryptocurrencyPriceHistory: [ChartData] = []
+    @State private var filteredCryptocurrencyPriceHistory: [ChartData] = []
     let cryptocurrency: String
     
     var body: some View {
@@ -12,7 +13,7 @@ struct CryptocurrencyDetails: View {
             } else {
                 Text("Bitcoin")
             }
-            Chart(cryptocurrencyPriceHistory) {
+            Chart(filteredCryptocurrencyPriceHistory) {
                 LineMark(
                     x: .value("Price", $0.x),
                     y: .value("Date", $0.y)
@@ -23,12 +24,37 @@ struct CryptocurrencyDetails: View {
             .chartYAxis(.hidden)
             .chartXAxis(.hidden)
             .frame(height: 300)
+            HStack {
+                Button("1W") {
+                    filterPriceHistory(timeSpan: "1W")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                
+                Button("1M") {
+                    filterPriceHistory(timeSpan: "1M")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                
+                Button("6M") {
+                    filterPriceHistory(timeSpan: "6M")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                
+                Button("1Y") {
+                    filterPriceHistory(timeSpan: "1Y")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+            }
             Spacer()
         }
         .task {
             do {
                 cryptocurrencyPriceHistory = try await getCryptocurrencyPriceHistory()
-                print(cryptocurrencyPriceHistory)
+                filteredCryptocurrencyPriceHistory = cryptocurrencyPriceHistory
             } catch PriceHistoryError.invalidResponse{
                 print("invalid response")
             } catch PriceHistoryError.invalidData{
@@ -39,6 +65,43 @@ struct CryptocurrencyDetails: View {
                 print("unexpected error")
             }
         }
+    }
+    
+    func filterPriceHistory(timeSpan: String) {
+        var currentDate = Date()
+        var calendar = Calendar.current
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .long
+        dateFormatter.timeStyle = .none
+        
+        switch timeSpan {
+        case "1W":
+            if let modifiedDate = calendar.date(byAdding: .day, value: -7, to: currentDate) {
+                currentDate = modifiedDate
+            }
+        case "1M":
+            if let modifiedDate = calendar.date(byAdding: .month, value: -1, to: currentDate) {
+                currentDate = modifiedDate
+            }
+        case "6M":
+            if let modifiedDate = calendar.date(byAdding: .month, value: -6, to: currentDate) {
+                currentDate = modifiedDate
+            }
+        case "1Y":
+            if let modifiedDate = calendar.date(byAdding: .year, value: -1, to: currentDate) {
+                currentDate = modifiedDate
+            }
+        default:
+            break
+        }
+        
+        let filteredHistory = cryptocurrencyPriceHistory.filter { chartData in
+            if let chartDate = dateFormatter.date(from: chartData.x) {
+                return chartDate >= currentDate
+            }
+            return false
+        }
+        filteredCryptocurrencyPriceHistory = filteredHistory
     }
 }
 
@@ -72,7 +135,6 @@ func getCryptocurrencyPriceHistory() async throws -> [ChartData] {
             print(ChartData(x: formattedDate, y: price))
             
             return ChartData(x: formattedDate, y: price)
-            
         }
     } catch {
         throw PriceHistoryError.invalidData
