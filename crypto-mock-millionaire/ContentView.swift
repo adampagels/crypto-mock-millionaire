@@ -7,8 +7,33 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(coins) { coin in
-                    NavigationLink(destination: CryptocurrencyDetails(cryptocurrency: coin.name)) {
-                        Text(coin.name)
+                    HStack {
+                        AsyncImage(url: URL(string: coin.image)) {
+                            image in image.resizable()
+                        }
+                    placeholder: {
+                        Color.gray
+                    }
+                    .frame(width: 30, height: 30)
+                    .clipShape(RoundedRectangle(cornerRadius: 25))
+                        VStack(alignment: .leading) {
+                            Text(coin.name)
+                            Text(coin.symbol.uppercased())
+                                .background(NavigationLink(destination: CryptocurrencyDetails(cryptocurrency: coin.name)) {}.opacity(0))
+                        }
+                        VStack(alignment: .trailing) {
+                            Text("$" + String(coin.currentPrice))
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                            if coin.priceChangePercentage24H > 0 {
+                                Text("+" + String(coin.priceChangePercentage24H) + "%")
+                                    .foregroundColor(.green)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                            } else if coin.priceChangePercentage24H < 0 {
+                                Text(String(coin.priceChangePercentage24H) + "%")
+                                    .foregroundColor(.red)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                            }
+                        }
                     }
                 }
             }
