@@ -4,15 +4,11 @@ import Charts
 struct CryptocurrencyDetails: View {
     @State private var cryptocurrencyPriceHistory: [ChartData] = []
     @State private var filteredCryptocurrencyPriceHistory: [ChartData] = []
-    let cryptocurrency: String
+    let cryptocurrency: Coin
     
     var body: some View {
         VStack() {
-            if !cryptocurrency.isEmpty {
-                Text(cryptocurrency)
-            } else {
-                Text("Bitcoin")
-            }
+            Text(cryptocurrency.name)
             Chart(filteredCryptocurrencyPriceHistory) {
                 LineMark(
                     x: .value("Price", $0.x),
@@ -69,7 +65,7 @@ struct CryptocurrencyDetails: View {
     
     func filterPriceHistory(timeSpan: String) {
         var currentDate = Date()
-        var calendar = Calendar.current
+        let calendar = Calendar.current
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .long
         dateFormatter.timeStyle = .none
@@ -143,7 +139,9 @@ func getCryptocurrencyPriceHistory() async throws -> [ChartData] {
 
 struct CryptocurrencyDetails_Previews: PreviewProvider {
     static var previews: some View {
-        CryptocurrencyDetails(cryptocurrency: String())
+        let coin = Coin(id: "bitcoin", symbol: "BTC", name: "Bitcoin", image: "bitcoin_image_url", currentPrice: 40000.0, marketCap: 800000000000, marketCapRank: 1, fullyDilutedValuation: nil, totalVolume: 50000000000, high24H: 42000, low24H: 39000, priceChange24H: 2000, priceChangePercentage24H: 5.0, marketCapChange24H: 10000000000, marketCapChangePercentage24H: 1.5, circulatingSupply: 18000000, totalSupply: 21000000, maxSupply: 21000000, ath: 65000, athChangePercentage: -10.0, athDate: "2021-04-15", roi: nil, atl: 3000, atlChangePercentage: 1300.0, atlDate: "2017-01-15", lastUpdated: "2023-08-20", priceChangePercentage24HInCurrency: nil)
+        
+        return CryptocurrencyDetails(cryptocurrency: coin)
     }
 }
 

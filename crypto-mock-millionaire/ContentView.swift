@@ -19,7 +19,7 @@ struct ContentView: View {
                         VStack(alignment: .leading) {
                             Text(coin.name)
                             Text(coin.symbol.uppercased())
-                                .background(NavigationLink(destination: CryptocurrencyDetails(cryptocurrency: coin.name)) {}.opacity(0))
+                                .background(NavigationLink(destination: CryptocurrencyDetails(cryptocurrency: coin)) {}.opacity(0))
                         }
                         VStack(alignment: .trailing) {
                             Text("$" + String(coin.currentPrice))
