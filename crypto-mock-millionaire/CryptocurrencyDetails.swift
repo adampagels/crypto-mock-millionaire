@@ -8,7 +8,36 @@ struct CryptocurrencyDetails: View {
     
     var body: some View {
         VStack() {
-            Text(cryptocurrency.name)
+            HStack {
+                AsyncImage(url: URL(string: cryptocurrency.image)) {
+                    image in image.resizable()
+                }
+            placeholder: {
+                Color.gray
+            }
+            .frame(width: 30, height: 30)
+            .clipShape(RoundedRectangle(cornerRadius: 25))
+                VStack(alignment: .leading) {
+                    Text(cryptocurrency.name)
+                    Text(cryptocurrency.symbol.uppercased())
+                }
+            }
+            .padding(.leading, 15.0)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading) {
+                Text("$" + String(cryptocurrency.currentPrice)).font(.largeTitle).padding(.bottom, 1.0)
+                if cryptocurrency.priceChangePercentage24H > 0 {
+                    Text("+" + String(cryptocurrency.priceChangePercentage24H) + "%")
+                        .foregroundColor(.green)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if cryptocurrency.priceChangePercentage24H < 0 {
+                    Text(String(cryptocurrency.priceChangePercentage24H) + "%")
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .padding(.leading, 15.0)
+            .frame(maxWidth: .infinity, alignment: .leading)
             Chart(filteredCryptocurrencyPriceHistory) {
                 LineMark(
                     x: .value("Price", $0.x),
