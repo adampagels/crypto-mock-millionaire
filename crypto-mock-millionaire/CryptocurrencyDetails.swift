@@ -49,6 +49,28 @@ struct CryptocurrencyDetails: View {
             .chartYAxis(.hidden)
             .chartXAxis(.hidden)
             .frame(height: 300)
+            .chartOverlay { proxy in
+                GeometryReader { geometry in
+                    Rectangle().fill(Color.clear).contentShape(Rectangle())
+                        .gesture(
+                            DragGesture()
+                                .onChanged { gestureValue in
+                                    let location = gestureValue.location
+                                    
+                                    let origin = geometry[proxy.plotAreaFrame].origin
+                                    let adjustedLocation = CGPoint(
+                                        x: location.x - origin.x,
+                                        y: location.y - origin.y
+                                    )
+                                    
+                                    if let value: (String, Double) = proxy.value(at: adjustedLocation) {
+                                        let (x, y) = value
+                                        print("Dragged at x:", x, "y:", y)
+                                    }
+                                }
+                        )
+                }
+            }
             HStack {
                 Button("1W") {
                     filterPriceHistory(timeSpan: "1W")
