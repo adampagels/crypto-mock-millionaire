@@ -5,6 +5,12 @@ struct CryptocurrencyDetails: View {
     @State private var cryptocurrencyPriceHistory: [ChartData] = []
     @State private var filteredCryptocurrencyPriceHistory: [ChartData] = []
     let cryptocurrency: Coin
+    @State private var selectedPrice: Double
+    
+    init(cryptocurrency: Coin) {
+        self.cryptocurrency = cryptocurrency
+        self._selectedPrice = State(initialValue: cryptocurrency.currentPrice)
+    }
     
     var body: some View {
         VStack() {
@@ -25,7 +31,9 @@ struct CryptocurrencyDetails: View {
             .padding(.leading, 15.0)
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .leading) {
-                Text("$" + String(cryptocurrency.currentPrice)).font(.largeTitle).padding(.bottom, 1.0)
+                // TODO: Enlarge font size once currency is formatted properly
+                // Text("$" + String(selectedPrice)).font(.largeTitle).padding(.bottom, 1.0)
+                Text("$" + String(selectedPrice)).padding(.bottom, 1.0)
                 if cryptocurrency.priceChangePercentage24H > 0 {
                     Text("+" + String(cryptocurrency.priceChangePercentage24H) + "%")
                         .foregroundColor(.green)
@@ -56,17 +64,20 @@ struct CryptocurrencyDetails: View {
                             DragGesture()
                                 .onChanged { gestureValue in
                                     let location = gestureValue.location
-                                    
-                                    let origin = geometry[proxy.plotAreaFrame].origin
+                                    let origin = geometry.frame(in: .global).origin
                                     let adjustedLocation = CGPoint(
                                         x: location.x - origin.x,
                                         y: location.y - origin.y
                                     )
                                     
-                                    if let value: (String, Double) = proxy.value(at: adjustedLocation) {
-                                        let (x, y) = value
-                                        print("Dragged at x:", x, "y:", y)
+                                    if let closestDataPoint = findClosestDataPoint(xValue: adjustedLocation.x, geometry: geometry, proxy: proxy) {
+                                        let closestYValue = closestDataPoint.y
+                                        print("Dragged at x:", closestDataPoint.x, "y:", closestYValue)
+                                        selectedPrice = closestYValue
                                     }
+                                }
+                                .onEnded { _ in
+                                    selectedPrice = cryptocurrency.currentPrice
                                 }
                         )
                 }
@@ -112,6 +123,16 @@ struct CryptocurrencyDetails: View {
                 print("unexpected error")
             }
         }
+    }
+    
+    func findClosestDataPoint(xValue: CGFloat, geometry: GeometryProxy, proxy: ChartProxy) -> ChartData? {
+        let dataIndex = Int(xValue / (geometry.size.width / CGFloat(filteredCryptocurrencyPriceHistory.count - 1)))
+        
+        guard dataIndex >= 0 && dataIndex < filteredCryptocurrencyPriceHistory.count else {
+            return nil
+        }
+        
+        return filteredCryptocurrencyPriceHistory[dataIndex]
     }
     
     func filterPriceHistory(timeSpan: String) {
@@ -180,7 +201,6 @@ func getCryptocurrencyPriceHistory() async throws -> [ChartData] {
             dateFormatter.timeStyle = .none
             let formattedDate = dateFormatter.string(from: date)
             print(ChartData(x: formattedDate, y: price))
-            
             return ChartData(x: formattedDate, y: price)
         }
     } catch {
